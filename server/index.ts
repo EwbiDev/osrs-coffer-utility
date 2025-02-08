@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = 5001;
 const USER_AGENT = process.env.USER_AGENT || "No user agent set please complain to: https://github.com/EwbiDev/osrs-coffer-utility";
 
 app.use(cors());
