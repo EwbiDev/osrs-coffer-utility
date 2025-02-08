@@ -10,7 +10,7 @@ type WikiPriceResponse = {
 };
 
 export type WikiPriceItem = {
-  wikiId: number;
+  id: number;
   high: number;
   highTime: number;
   low: number;
@@ -29,7 +29,7 @@ export async function getWikiPrices(): Promise<WikiPriceData> {
     );
 
     const transformedData = Object.entries(response.data.data).map(([id, priceData]) => ({
-      wikiId: parseInt(id),
+      id: parseInt(id),
       high: priceData.high,
       highTime: priceData.highTime,
       low: priceData.low,
