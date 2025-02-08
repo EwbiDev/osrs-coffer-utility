@@ -28,7 +28,6 @@ export async function getWikiPrices(): Promise<WikiPriceData> {
       "http://localhost:5001/api/wiki_prices"
     );
 
-    // Transform the nested data object
     const transformedData = Object.entries(response.data.data).map(([id, priceData]) => ({
       wikiId: parseInt(id),
       high: priceData.high,
