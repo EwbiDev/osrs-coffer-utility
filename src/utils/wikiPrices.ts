@@ -6,31 +6,52 @@ const headers = {
   "User-Agent": USER_AGENT,
 };
 
+// The raw response type
+type WikiPriceResponse = {
+  data: Record<string, {
+    high: number;
+    highTime: number;
+    low: number;
+    lowTime: number;
+  }>;
+};
+
 export type WikiPriceItem = {
+  wikiId: number;
   high: number;
   highTime: number;
   low: number;
   lowTime: number;
 };
 
-export type WikiPriceData = Record<string, WikiPriceItem>;
-
-export type WikiPriceDataResponse = {
-  data: WikiPriceData;
+export type WikiPriceData = {
+  data: WikiPriceItem[];
   error?: unknown;
 };
 
-export async function getWikiPrices(): Promise<WikiPriceDataResponse> {
+export async function getWikiPrices(): Promise<WikiPriceData> {
   try {
-    const response = await axios.get(
+    const response = await axios.get<WikiPriceResponse>(
       "https://prices.runescape.wiki/api/v1/osrs/latest",
       { headers }
     );
-    return response.data;
+
+    // Transform the nested data object
+    const transformedData = Object.entries(response.data.data).map(([id, priceData]) => ({
+      wikiId: parseInt(id),
+      high: priceData.high,
+      highTime: priceData.highTime,
+      low: priceData.low,
+      lowTime: priceData.lowTime
+    }));
+
+    return {
+      data: transformedData
+    };
   } catch (error) {
     return {
-      data: {},
-      error,
+      data: [],
+      error
     };
   }
 }
