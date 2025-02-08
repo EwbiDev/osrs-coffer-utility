@@ -1,12 +1,5 @@
 import axios from "axios";
 
-const USER_AGENT = import.meta.env.VITE_USER_AGENT;
-
-const headers = {
-  "User-Agent": USER_AGENT,
-};
-
-// The raw response type
 type WikiPriceResponse = {
   data: Record<string, {
     high: number;
@@ -32,8 +25,7 @@ export type WikiPriceData = {
 export async function getWikiPrices(): Promise<WikiPriceData> {
   try {
     const response = await axios.get<WikiPriceResponse>(
-      "https://prices.runescape.wiki/api/v1/osrs/latest",
-      { headers }
+      "http://localhost:5001/api/wiki_prices"
     );
 
     // Transform the nested data object

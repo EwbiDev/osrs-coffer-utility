@@ -8,7 +8,9 @@ dotenv.config();
 
 const app = express();
 const PORT = 5001;
-const USER_AGENT = process.env.USER_AGENT || "No user agent set please complain to: https://github.com/EwbiDev/osrs-coffer-utility";
+const USER_AGENT =
+  process.env.USER_AGENT ||
+  "No user agent set please complain to: https://github.com/EwbiDev/osrs-coffer-utility";
 
 app.use(cors());
 app.use(express.json());
@@ -16,11 +18,31 @@ app.use(express.json());
 // Example API Proxy Route
 app.get("/api/wiki_prices", async (req, res) => {
   try {
-    const response = await axios.get("https://prices.runescape.wiki/api/v1/osrs/latest", {
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
-    });
+    const response = await axios.get(
+      "https://prices.runescape.wiki/api/v1/osrs/latest",
+      {
+        headers: {
+          "User-Agent": USER_AGENT,
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+app.get("/api/official_prices", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://chisel.weirdgloop.org/gazproj/gazbot/os_dump.json",
+      {
+        headers: {
+          "User-Agent": USER_AGENT,
+        },
+      }
+    );
 
     res.json(response.data);
   } catch (error) {
