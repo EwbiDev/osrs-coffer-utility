@@ -42,17 +42,20 @@ function App() {
   combinedPrices = combinedPrices?.filter((item) => {
     return Object.entries(filters).every(([key, value]) => {
       if (!value) return true;
-      if (value.startsWith(">") || value.startsWith("<")) {
-        const numValue = Number(value.slice(1));
-        if (!isNaN(numValue)) {
-          return value.startsWith(">") ? item[key] > numValue : item[key] < numValue;
+      const conditions = value.split(" ").filter(Boolean);
+      return conditions.every((condition) => {
+        if (condition.startsWith(">") || condition.startsWith("<")) {
+          const numValue = Number(condition.slice(1));
+          if (!isNaN(numValue)) {
+            return condition.startsWith(">") ? item[key] > numValue : item[key] < numValue;
+          }
+        } else if (!isNaN(Number(condition))) {
+          return item[key] === Number(condition);
+        } else {
+          return item[key]?.toString().toLowerCase().includes(condition.toLowerCase());
         }
-      } else if (!isNaN(Number(value))) {
-        return item[key] === Number(value);
-      } else {
-        return item[key]?.toString().toLowerCase().includes(value.toLowerCase());
-      }
-      return true;
+        return true;
+      });
     });
   });
 
@@ -94,7 +97,7 @@ function App() {
                   </div>
                   <input
                     type="text"
-                    placeholder={isNaN(Number(combinedPrices?.[0]?.[key])) ? "Filter" : "< or > value"}
+                    placeholder={isNaN(Number(combinedPrices?.[0]?.[key])) ? "Filter" : "e.g. >1 <99"}
                     value={filters[key] || ""}
                     onChange={(e) => handleFilterChange(key, e.target.value)}
                     className="mt-1 p-1 border rounded w-full"
