@@ -153,7 +153,17 @@ function App() {
           <tbody className="divide-y divide-gray-300">
             {displayedItems?.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-800">{item.name}</td>
+                <td
+                  className="px-6 py-4 text-sm text-gray-800 cursor-pointer"
+                  onClick={() =>
+                    window.open(
+                      `https://prices.runescape.wiki/osrs/item/${item.id}`,
+                      "_blank"
+                    )
+                  }
+                >
+                  {item.name}
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-800">
                   {item.price}
                 </td>
