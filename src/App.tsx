@@ -5,6 +5,9 @@ import { getOfficialPrices, OfficialItemPrice } from "./utils/officialPrices";
 function App() {
   const [wikiPrices, setWikiPrices] = useState<WikiPriceData>();
   const [officialPrices, setOfficialPrices] = useState<OfficialItemPrice[]>();
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   useEffect(() => {
     async function updateInfo() {
@@ -21,26 +24,58 @@ function App() {
     updateInfo();
   }, []);
 
-  let combinedPrices;
+  let combinedPrices = officialPrices?.map((item) => {
+    const wikiItem = wikiPrices?.data[item.id];
+    const wikiHigh = wikiItem?.high || null;
+    const difference = wikiHigh ? item.price - wikiHigh : null;
+    const pricePercentage = wikiHigh ? ((item.price - wikiHigh) / wikiHigh) * 100 : null;
+    
+    return {
+      ...item,
+      wikiHigh,
+      wikiLow: wikiItem?.low || null,
+      difference,
+      pricePercentage,
+    };
+  });
 
-  if (officialPrices && wikiPrices) {
-    combinedPrices = officialPrices?.map((item) => {
-      const wikiItem = wikiPrices?.data[item.id];
-      if (wikiItem) {
-        return {
-          ...item,
-          wikiHigh: wikiItem.high,
-          wikiLow: wikiItem.low,
-        };
+  combinedPrices = combinedPrices?.filter((item) => {
+    return Object.entries(filters).every(([key, value]) => {
+      if (!value) return true;
+      if (value.startsWith(">") || value.startsWith("<")) {
+        const numValue = Number(value.slice(1));
+        if (!isNaN(numValue)) {
+          return value.startsWith(">") ? item[key] > numValue : item[key] < numValue;
+        }
+      } else if (!isNaN(Number(value))) {
+        return item[key] === Number(value);
+      } else {
+        return item[key]?.toString().toLowerCase().includes(value.toLowerCase());
       }
+      return true;
+    });
+  });
 
-      return {
-        ...item,
-        wikiHigh: null,
-        wikiLow: null,
-      };
+  if (sortKey) {
+    combinedPrices?.sort((a, b) => {
+      const valA = a[sortKey] ?? 0;
+      const valB = b[sortKey] ?? 0;
+      return sortOrder === "asc" ? valA - valB : valB - valA;
     });
   }
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters({ ...filters, [key]: value });
+  };
 
   return (
     <div className="p-4">
@@ -49,51 +84,36 @@ function App() {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Price
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Limit
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Volume
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Wiki High
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Wiki Low
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Difference
-              </th>
+              {["name", "price", "limit", "volume", "wikiHigh", "wikiLow", "difference", "pricePercentage"].map((key) => (
+                <th
+                  key={key}
+                  className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-200"
+                >
+                  <div onClick={() => handleSort(key)}>
+                    {key.charAt(0).toUpperCase() + key.slice(1)} {sortKey === key ? (sortOrder === "asc" ? "▲" : "▼") : ""}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={isNaN(Number(combinedPrices?.[0]?.[key])) ? "Filter" : "< or > value"}
+                    value={filters[key] || ""}
+                    onChange={(e) => handleFilterChange(key, e.target.value)}
+                    className="mt-1 p-1 border rounded w-full"
+                  />
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-300">
             {combinedPrices?.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 text-sm text-gray-800">{item.name}</td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.price}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.limit}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.volume}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.wikiHigh}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.wikiLow}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.wikiHigh ? item.price - item.wikiHigh : "none"}
-                </td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.price}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.limit}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.volume}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.wikiHigh}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.wikiLow}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.difference ?? "none"}</td>
+                <td className="px-6 py-4 text-sm text-gray-800">{item.pricePercentage !== null ? `${item.pricePercentage.toFixed(2)}%` : "none"}</td>
               </tr>
             ))}
           </tbody>
