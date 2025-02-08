@@ -1,5 +1,7 @@
+import getWikiPrices from "./utils/wikiPrices";
+
 function App() {
-  
+  getWikiPrices();
   return <></>;
 }
 
