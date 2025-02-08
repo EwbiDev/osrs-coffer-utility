@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { getWikiPrices, WikiPriceItem } from "./utils/wikiPrices";
+import { getWikiPrices, WikiPriceData } from "./utils/wikiPrices";
 import { getOfficialPrices, OfficialItemPrice } from "./utils/officialPrices";
 
 function App() {
-  const [wikiPrices, setWikiPrices] = useState<WikiPriceItem[]>();
+  const [wikiPrices, setWikiPrices] = useState<WikiPriceData>();
   const [officialPrices, setOfficialPrices] = useState<OfficialItemPrice[]>();
 
   useEffect(() => {
     async function updateInfo() {
       const wikiPrices = await getWikiPrices();
       if (!wikiPrices.error) {
-        setWikiPrices(wikiPrices.data);
+        setWikiPrices(wikiPrices);
       }
 
       const officialPrices = await getOfficialPrices();
@@ -21,8 +21,25 @@ function App() {
     updateInfo();
   }, []);
 
+  let combinedPrices;
+
   if (officialPrices && wikiPrices) {
-    console.log(officialPrices[0], wikiPrices[0]);
+    combinedPrices = officialPrices?.map((item) => {
+      const wikiItem = wikiPrices?.data[item.id];
+      if (wikiItem) {
+        return {
+          ...item,
+          wikiHigh: wikiItem.high,
+          wikiLow: wikiItem.low,
+        };
+      }
+
+      return {
+        ...item,
+        wikiHigh: null,
+        wikiLow: null,
+      };
+    });
   }
 
   return (
@@ -44,10 +61,19 @@ function App() {
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
                 Volume
               </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                Wiki High
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                Wiki Low
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                Difference
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-300">
-            {officialPrices?.map((item) => (
+            {combinedPrices?.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 text-sm text-gray-800">{item.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-800">
@@ -58,6 +84,15 @@ function App() {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-800">
                   {item.volume}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-800">
+                  {item.wikiHigh}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-800">
+                  {item.wikiLow}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-800">
+                  {item.wikiHigh ? item.price - item.wikiHigh : "none"}
                 </td>
               </tr>
             ))}
