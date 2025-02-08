@@ -6,16 +6,31 @@ const headers = {
   "User-Agent": USER_AGENT,
 };
 
-async function getWikiPrices() {
+export type WikiPriceItem = {
+  high: number;
+  highTime: number;
+  low: number;
+  lowTime: number;
+};
+
+export type WikiPriceData = Record<string, WikiPriceItem>;
+
+export type WikiPriceDataResponse = {
+  data: WikiPriceData;
+  error?: unknown;
+};
+
+export async function getWikiPrices(): Promise<WikiPriceDataResponse> {
   try {
     const response = await axios.get(
       "https://prices.runescape.wiki/api/v1/osrs/latest",
       { headers }
     );
-    console.log(response);
+    return response.data;
   } catch (error) {
-    console.error(error);
+    return {
+      data: {},
+      error,
+    };
   }
 }
-
-export default getWikiPrices;

@@ -1,7 +1,21 @@
-import getWikiPrices from "./utils/wikiPrices";
+import { useEffect, useState } from "react";
+import { getWikiPrices, WikiPriceData } from "./utils/wikiPrices";
 
 function App() {
-  getWikiPrices();
+  const [wikiPrices, setWikiPrices] = useState<WikiPriceData>();
+
+  useEffect(() => {
+    async function updateInfo() {
+      const wikiPrices = await getWikiPrices();
+      if (!wikiPrices.error) {
+        setWikiPrices(wikiPrices.data);
+      }
+    }
+    updateInfo();
+  }, []);
+
+  console.log(wikiPrices);
+
   return <></>;
 }
 
