@@ -150,105 +150,107 @@ function App() {
         </label>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                <div>Show</div>
-                <select
-                  value={visibilityFilter}
-                  onChange={(e) =>
-                    setVisibilityFilter(e.target.value as VisibilityFilter)
-                  }
-                  className="mt-1 p-1 border rounded w-full"
-                >
-                  <option value="all">All Items</option>
-                  <option value="visible">Visible Only</option>
-                  <option value="hidden">Hidden Only</option>
-                </select>
-              </th>
-              {[
-                "name",
-                "price",
-                "limit",
-                "volume",
-                "wikiHigh",
-                "wikiLow",
-                "difference",
-                "pricePercentage",
-              ].map((key) => (
-                <th
-                  key={key}
-                  className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-200"
-                >
-                  <div onClick={() => handleSort(key)}>
-                    {key.charAt(0).toUpperCase() + key.slice(1)}{" "}
-                    {sortKey === key ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder={
-                      isNaN(Number(combinedPrices?.[0]?.[key]))
-                        ? "Filter"
-                        : "e.g. >1 <99"
+        <div className="max-h-[70vh] overflow-y-auto relative">
+          <table className="min-w-full bg-white border border-gray-300">
+            <thead className="bg-gray-100 sticky top-0 z-10">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600 bg-gray-100">
+                  <div>Show</div>
+                  <select
+                    value={visibilityFilter}
+                    onChange={(e) =>
+                      setVisibilityFilter(e.target.value as VisibilityFilter)
                     }
-                    value={filters[key] || ""}
-                    onChange={(e) => handleFilterChange(key, e.target.value)}
                     className="mt-1 p-1 border rounded w-full"
-                  />
+                  >
+                    <option value="all">All Items</option>
+                    <option value="visible">Visible Only</option>
+                    <option value="hidden">Hidden Only</option>
+                  </select>
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-300">
-            {displayedItems?.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  <input
-                    type="checkbox"
-                    checked={!hiddenItems[item.id]}
-                    onChange={() => toggleItemVisibility(item.id)}
-                    className="rounded"
-                  />
-                </td>
-                <td
-                  className="px-6 py-4 text-sm text-gray-800 cursor-pointer"
-                  onClick={() =>
-                    window.open(
-                      `https://prices.runescape.wiki/osrs/item/${item.id}`,
-                      "_blank"
-                    )
-                  }
-                >
-                  {item.name}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.price}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.limit}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.volume}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.wikiHigh}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.wikiLow}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.difference ?? "none"}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-800">
-                  {item.pricePercentage !== null
-                    ? `${item.pricePercentage.toFixed(2)}%`
-                    : "none"}
-                </td>
+                {[
+                  "name",
+                  "price",
+                  "limit",
+                  "volume",
+                  "wikiHigh",
+                  "wikiLow",
+                  "difference",
+                  "pricePercentage",
+                ].map((key) => (
+                  <th
+                    key={key}
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-200 bg-gray-100"
+                  >
+                    <div onClick={() => handleSort(key)}>
+                      {key.charAt(0).toUpperCase() + key.slice(1)}{" "}
+                      {sortKey === key ? (sortOrder === "asc" ? "▲" : "▼") : ""}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={
+                        isNaN(Number(combinedPrices?.[0]?.[key]))
+                          ? "Filter"
+                          : "e.g. >1 <99"
+                      }
+                      value={filters[key] || ""}
+                      onChange={(e) => handleFilterChange(key, e.target.value)}
+                      className="mt-1 p-1 border rounded w-full"
+                    />
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-300">
+              {displayedItems?.map((item) => (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    <input
+                      type="checkbox"
+                      checked={!hiddenItems[item.id]}
+                      onChange={() => toggleItemVisibility(item.id)}
+                      className="rounded"
+                    />
+                  </td>
+                  <td
+                    className="px-6 py-4 text-sm text-gray-800 cursor-pointer"
+                    onClick={() =>
+                      window.open(
+                        `https://prices.runescape.wiki/osrs/item/${item.id}`,
+                        "_blank"
+                      )
+                    }
+                  >
+                    {item.name}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.price}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.limit}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.volume}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.wikiHigh}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.wikiLow}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.difference ?? "none"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-800">
+                    {item.pricePercentage !== null
+                      ? `${item.pricePercentage.toFixed(2)}%`
+                      : "none"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div className="mt-4 flex justify-between">
         <button
