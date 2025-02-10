@@ -13,6 +13,16 @@ function App() {
     useState<Record<string, string>>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [hiddenItems, setHiddenItems] = useState<Record<string, boolean>>(
+    () => {
+      const saved = localStorage.getItem("hiddenItems");
+      return saved ? JSON.parse(saved) : {};
+    }
+  );
+
+  useEffect(() => {
+    localStorage.setItem("hiddenItems", JSON.stringify(hiddenItems));
+  }, [hiddenItems]);
 
   useEffect(() => {
     async function updateInfo() {
@@ -45,6 +55,9 @@ function App() {
       pricePercentage,
     };
   });
+
+  // Filter out hidden items before applying other filters
+  combinedPrices = combinedPrices?.filter((item) => !hiddenItems[item.id]);
 
   combinedPrices = combinedPrices?.filter((item) => {
     return Object.entries(filters).every(([key, value]) => {
@@ -99,6 +112,13 @@ function App() {
     setCurrentPage(1);
   };
 
+  const toggleItemVisibility = (itemId: number) => {
+    setHiddenItems((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Prices</h1>
@@ -117,6 +137,9 @@ function App() {
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                Show
+              </th>
               {[
                 "name",
                 "price",
@@ -153,6 +176,14 @@ function App() {
           <tbody className="divide-y divide-gray-300">
             {displayedItems?.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 text-sm text-gray-800">
+                  <input
+                    type="checkbox"
+                    checked={!hiddenItems[item.id]}
+                    onChange={() => toggleItemVisibility(item.id)}
+                    className="rounded"
+                  />
+                </td>
                 <td
                   className="px-6 py-4 text-sm text-gray-800 cursor-pointer"
                   onClick={() =>
@@ -196,6 +227,7 @@ function App() {
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage(currentPage - 1)}
+          className="px-4 py-2 bg-gray-100 rounded disabled:opacity-50"
         >
           Previous
         </button>
@@ -205,6 +237,7 @@ function App() {
         <button
           disabled={currentPage === totalPages}
           onClick={() => setCurrentPage(currentPage + 1)}
+          className="px-4 py-2 bg-gray-100 rounded disabled:opacity-50"
         >
           Next
         </button>
