@@ -51,6 +51,8 @@ function App() {
       ? ((item.price - wikiHigh) / wikiHigh) * 100
       : null;
 
+    item.limit = item.limit || 0;
+
     return {
       ...item,
       wikiHigh,
