@@ -4,6 +4,8 @@ import { getOfficialPrices, OfficialItemPrice } from "./utils/officialPrices";
 
 const DEFAULT_FILTERS = { price: ">10000", wikiHigh: ">1" };
 
+type VisibilityFilter = "all" | "visible" | "hidden";
+
 function App() {
   const [wikiPrices, setWikiPrices] = useState<WikiPriceData>();
   const [officialPrices, setOfficialPrices] = useState<OfficialItemPrice[]>();
@@ -13,6 +15,8 @@ function App() {
     useState<Record<string, string>>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [visibilityFilter, setVisibilityFilter] =
+    useState<VisibilityFilter>("visible");
   const [hiddenItems, setHiddenItems] = useState<Record<string, boolean>>(
     () => {
       const saved = localStorage.getItem("hiddenItems");
@@ -56,8 +60,18 @@ function App() {
     };
   });
 
-  // Filter out hidden items before applying other filters
-  combinedPrices = combinedPrices?.filter((item) => !hiddenItems[item.id]);
+  // Apply visibility filter
+  combinedPrices = combinedPrices?.filter((item) => {
+    switch (visibilityFilter) {
+      case "visible":
+        return !hiddenItems[item.id];
+      case "hidden":
+        return hiddenItems[item.id];
+      case "all":
+      default:
+        return true;
+    }
+  });
 
   combinedPrices = combinedPrices?.filter((item) => {
     return Object.entries(filters).every(([key, value]) => {
@@ -138,7 +152,18 @@ function App() {
           <thead>
             <tr className="bg-gray-100">
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
-                Show
+                <div>Show</div>
+                <select
+                  value={visibilityFilter}
+                  onChange={(e) =>
+                    setVisibilityFilter(e.target.value as VisibilityFilter)
+                  }
+                  className="mt-1 p-1 border rounded w-full"
+                >
+                  <option value="all">All Items</option>
+                  <option value="visible">Visible Only</option>
+                  <option value="hidden">Hidden Only</option>
+                </select>
               </th>
               {[
                 "name",
